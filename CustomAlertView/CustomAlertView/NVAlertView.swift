@@ -8,14 +8,21 @@
 
 import UIKit
 
+enum AlertViewResult {
+    case OK, Cancel, Unknown
+}
+
 class NVAlertView: NSObject {
+    
+    let nibName = "NVAlertView"
     
     var rootView:UIView
     var buttonTitle:NSString
+    var completion:(AlertViewResult) -> Void = { (arg:AlertViewResult) -> Void in
+    }
     
-    //var completion:() -> Void?
-    
-    var panelView:UIView?
+    // Layout
+    var alertRootView:UIView?
     var alertBackground:UIView?
     var closeButton:UIButton?
     
@@ -32,34 +39,56 @@ class NVAlertView: NSObject {
         setupView()
     }
     
-    func showPopUpWithCompletion(completion: () -> Void) {
+    func showPopUpWithCompletion(completion: (arg:AlertViewResult) -> Void) {
+        self.completion = completion
         setupView()
-        //        self.completion = { completion($0) }
     }
     
     func setupView() {
-        self.panelView = NSBundle.mainBundle().loadNibNamed("NVAlertView", owner: self, options: nil)[0] as? UIView
-        self.panelView?.translatesAutoresizingMaskIntoConstraints = false;
-        self.alertBackground = self.panelView!.viewWithTag(0)!;
-        self.closeButton = self.panelView!.viewWithTag(2) as? UIButton;
+        self.alertRootView = NSBundle.mainBundle().loadNibNamed(nibName, owner: self, options: nil)[0] as? UIView
+        self.alertRootView?.translatesAutoresizingMaskIntoConstraints = false;
+        self.alertBackground = self.alertRootView!.viewWithTag(0)!;
+        self.closeButton = self.alertRootView!.viewWithTag(2) as? UIButton;
         self.closeButton?.addTarget(self, action: Selector("closeAlertDialog:"), forControlEvents: .TouchUpInside)
         self.alertBackground!.clipsToBounds = true;
+        
+        // Layout to root view
         self.layoutToRootView()
         self.retainSelf()
     }
     
     func layoutToRootView() {
         UIView.transitionWithView(self.rootView, duration: 0.5, options: UIViewAnimationOptions.TransitionCrossDissolve, animations: {
-            self.rootView.addSubview(self.panelView!)
+            self.rootView.addSubview(self.alertRootView!)
             }, completion: nil)
         
-        let top = NSLayoutConstraint(item: self.panelView!, attribute: NSLayoutAttribute.Top, relatedBy: NSLayoutRelation.Equal, toItem: self.rootView, attribute: NSLayoutAttribute.Top, multiplier: 1.0, constant: 0)
+        let top = NSLayoutConstraint(item: self.alertRootView!,
+            attribute: NSLayoutAttribute.Top,
+            relatedBy: NSLayoutRelation.Equal,
+            toItem: self.rootView,
+            attribute: NSLayoutAttribute.Top,
+            multiplier: 1.0, constant: 0)
         
-        let bottom = NSLayoutConstraint(item: self.panelView!, attribute: NSLayoutAttribute.Bottom, relatedBy: NSLayoutRelation.Equal, toItem: self.rootView, attribute: NSLayoutAttribute.Bottom, multiplier: 1.0, constant: 0)
+        let bottom = NSLayoutConstraint(item: self.alertRootView!,
+            attribute: NSLayoutAttribute.Bottom,
+            relatedBy: NSLayoutRelation.Equal,
+            toItem: self.rootView,
+            attribute: NSLayoutAttribute.Bottom,
+            multiplier: 1.0, constant: 0)
         
-        let trailing = NSLayoutConstraint(item: self.panelView!, attribute: NSLayoutAttribute.Trailing, relatedBy: NSLayoutRelation.Equal, toItem: self.rootView, attribute: NSLayoutAttribute.Trailing, multiplier: 1.0, constant: 0)
+        let trailing = NSLayoutConstraint(item: self.alertRootView!,
+            attribute: NSLayoutAttribute.Trailing,
+            relatedBy: NSLayoutRelation.Equal,
+            toItem: self.rootView,
+            attribute: NSLayoutAttribute.Trailing,
+            multiplier: 1.0, constant: 0)
         
-        let leading = NSLayoutConstraint(item: self.panelView!, attribute: NSLayoutAttribute.Leading, relatedBy: NSLayoutRelation.Equal, toItem: self.rootView, attribute: NSLayoutAttribute.Leading, multiplier: 1.0, constant: 0)
+        let leading = NSLayoutConstraint(item: self.alertRootView!,
+            attribute: NSLayoutAttribute.Leading,
+            relatedBy: NSLayoutRelation.Equal,
+            toItem: self.rootView,
+            attribute: NSLayoutAttribute.Leading,
+            multiplier: 1.0, constant: 0)
         
         self.rootView.addConstraint(top)
         self.rootView.addConstraint(bottom)
@@ -69,7 +98,8 @@ class NVAlertView: NSObject {
     }
     
     func closeAlertDialog(sender: UIButton) {
-        self.panelView?.removeFromSuperview()
+        self.alertRootView?.removeFromSuperview()
+        completion(AlertViewResult.OK)
         self.releaseSelf()
     }
     func retainSelf() {

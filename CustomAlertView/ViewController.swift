@@ -22,7 +22,9 @@ class ViewController: UIViewController {
 
     @IBAction func btnClick(sender: AnyObject) {
         let popup = NVAlertView.init(rootView: self.view, buttonTitle: "meo meo")
-        popup.showPopUp()
+//        popup.showPopUp();
+        popup.showPopUpWithCompletion({ (arg:AlertViewResult) -> Void in
+            print("result: \(arg)")
+        })
     }
 }
-
