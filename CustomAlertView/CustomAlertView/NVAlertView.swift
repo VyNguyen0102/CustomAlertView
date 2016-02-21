@@ -1,3 +1,4 @@
+
 //
 //  NVAlertView.swift
 //  CustomAlertView
@@ -15,6 +16,7 @@ enum AlertViewResult {
 class NVAlertView: NSObject {
     
     let nibName = "NVAlertView"
+    let popupConerRadius:CGFloat = 5.0
     
     var rootView:UIView
     var buttonTitle:NSString
@@ -24,6 +26,7 @@ class NVAlertView: NSObject {
     // Layout
     var alertRootView:UIView?
     var alertBackground:UIView?
+    var alertPanel:UIView?
     var closeButton:UIButton?
     
     // Release retain
@@ -48,6 +51,7 @@ class NVAlertView: NSObject {
         self.alertRootView = NSBundle.mainBundle().loadNibNamed(nibName, owner: self, options: nil)[0] as? UIView
         self.alertRootView?.translatesAutoresizingMaskIntoConstraints = false;
         self.alertBackground = self.alertRootView!.viewWithTag(0)!;
+        self.alertPanel = self.alertRootView!.viewWithTag(1)!;
         self.closeButton = self.alertRootView!.viewWithTag(2) as? UIButton;
         self.closeButton?.addTarget(self, action: Selector("closeAlertDialog:"), forControlEvents: .TouchUpInside)
         self.alertBackground!.clipsToBounds = true;
@@ -55,6 +59,13 @@ class NVAlertView: NSObject {
         // Layout to root view
         self.layoutToRootView()
         self.retainSelf()
+        self.customLayout()
+    }
+    
+    func customLayout() {
+        let layerPopup = self.alertPanel!.layer
+        layerPopup.cornerRadius = popupConerRadius
+        layerPopup.masksToBounds = true
     }
     
     func layoutToRootView() {
